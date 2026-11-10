@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>米米</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23141416'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23f5a623'/%3E%3C/svg%3E">
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding: 18px 12px 40px;
+  box-sizing: border-box;
+}
+
+/* 避免样式污染，添加专属前缀 */
+.mufy-wb-wrapper {
+  --wb-text-main: rgba(17, 17, 17, 0.88);
+  --wb-text-sub: rgba(17, 17, 17, 0.55);
+  --wb-text-muted: rgba(17, 17, 17, 0.4);
+  --wb-accent: #d98200;
+  --wb-divider: rgba(17, 17, 17, 0.08);
+
+  width: 100%;
+  max-width: 480px;
+  margin: 10px auto;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--wb-text-main);
+  background: transparent;
+  padding: 10px 0;
+  box-sizing: border-box;
+}
+
+/* 纯CSS标签页切换逻辑 */
+.mufy-tab-content {
+  display: none;
+}
+#tab-jingxuan:checked ~ .mufy-tab-content.jingxuan {
+  display: flex;
+}
+#tab-weibo:checked ~ .mufy-tab-content.weibo {
+  display: flex;
+}
+#tab-video:checked ~ .mufy-tab-content.video {
+  display: flex;
+}
+#tab-album:checked ~ .mufy-tab-content.album {
+  display: flex;
+}
+#tab-jingxuan:checked ~ .mufy-wb-tabs label[for="tab-jingxuan"],
+#tab-weibo:checked ~ .mufy-wb-tabs label[for="tab-weibo"],
+#tab-video:checked ~ .mufy-wb-tabs label[for="tab-video"],
+#tab-album:checked ~ .mufy-wb-tabs label[for="tab-album"] {
+  color: var(--wb-text-main);
+  font-weight: 600;
+}
+#tab-jingxuan:checked ~ .mufy-wb-tabs label[for="tab-jingxuan"]::after,
+#tab-weibo:checked ~ .mufy-wb-tabs label[for="tab-weibo"]::after,
+#tab-video:checked ~ .mufy-wb-tabs label[for="tab-video"]::after,
+#tab-album:checked ~ .mufy-wb-tabs label[for="tab-album"]::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 3px;
+  background-color: var(--wb-accent);
+  border-radius: 3px;
+}
+
+/* 头部资料区 */
+.mufy-wb-profile {
+  display: flex;
+  gap: 16px;
+  padding: 0 12px 20px;
+}
+
+.mufy-wb-avatar-box {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.mufy-wb-avatar-box img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+}
+
+.mufy-wb-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.mufy-wb-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mufy-wb-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.mufy-wb-tags {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.mufy-wb-vip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(217, 130, 0, 0.12);
+  border-radius: 10px;
+  padding: 0 6px;
+  height: 16px;
+  font-size: 10px;
+  color: #d98200;
+  font-weight: bold;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+.mufy-wb-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--wb-text-sub);
+}
+.mufy-wb-stats strong {
+  color: var(--wb-text-main);
+  font-weight: 600;
+}
+
+.mufy-wb-chaohua {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  background: rgba(17, 17, 17, 0.05);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  color: var(--wb-text-sub);
+  margin-top: 2px;
+}
+.mufy-wb-chaohua span {
+  color: var(--wb-accent);
+  margin-right: 4px;
+}
+
+/* 导航Tab栏 */
+.mufy-wb-tabs {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--wb-divider);
+  margin-bottom: 16px;
+}
+.mufy-wb-tab {
+  flex: 1 1 0;
+  text-align: center;
+  padding: 13px 0;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  color: var(--wb-text-sub);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+/* 帖子流区 */
+.mufy-wb-feed {
+  flex-direction: column;
+  gap: 24px;
+  padding: 0 12px;
+}
+.mufy-wb-post {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mufy-wb-post-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+.mufy-wb-post-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.mufy-wb-post-meta {
+  display: flex;
+  flex-direction: column;
+}
+.mufy-wb-post-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--wb-text-main);
+}
+.mufy-wb-post-time {
+  font-size: 11px;
+  color: var(--wb-text-muted);
+}
+.mufy-wb-read-count {
+  position: absolute;
+  right: 0;
+  top: 4px;
+  font-size: 11px;
+  color: var(--wb-text-muted);
+}
+
+.mufy-wb-post-content {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--wb-text-main);
+  padding-left: 2px;
+  word-break: break-all;
+}
+
+.mufy-wb-input-wrapper {
+  margin: 4px 2px 2px;
+  background: rgba(17, 17, 17, 0.05);
+  border-radius: 8px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(17, 17, 17, 0.05);
+}
+.mufy-wb-input-wrapper input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: rgba(17, 17, 17, 0.62);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.mufy-wb-single-image {
+  margin-top: 6px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.mufy-wb-single-image img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.mufy-wb-post-media-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 4px;
+  padding-left: 2px;
+}
+.mufy-wb-post-image {
+  flex: 0 0 33.33%;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.mufy-wb-post-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+.mufy-wb-post-side-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* 调整基础设定区的线条排版：大幅降低透明度，弱化分割感 */
+.mufy-wb-basic-settings {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: flex-start;
+  padding-top: 2px;
+}
+.mufy-wb-info-tag {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  background: transparent;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.05); /* 极低透明度，制造若有若无的水印感 */
+  border-radius: 0;
+  padding: 0 2px 4px 2px;
+  font-size: 11px;
+  color: rgba(17, 17, 17, 0.55);
+}
+.mufy-wb-info-tag span {
+  color: var(--wb-text-main);
+  font-weight: 600;
+  font-size: 11px;
+  transform: translateY(1px);
+}
+
+.mufy-wb-role-desc {
+  margin-top: 8px;
+  flex: none;
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--wb-text-sub);
+  white-space: pre-line;
+}
+.mufy-wb-gender-tags {
+  display: flex;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+.mufy-wb-g-tag {
+  flex: 1;
+  background: rgba(17, 17, 17, 0.05);
+  border-radius: 12px;
+  padding: 3px 0;
+  font-size: 10px;
+  color: var(--wb-text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 底部互动操作栏 */
+.mufy-wb-post-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px 0;
+  margin-top: 8px;
+  border-top: 1px solid rgba(17, 17, 17, 0.05);
+}
+
+.mufy-wb-no-border {
+  border-top: none !important;
+  padding-top: 4px !important;
+  margin-top: 4px !important;
+}
+
+.mufy-wb-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--wb-text-sub);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+/* 点赞交互系统 */
+.mufy-wb-like-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--wb-text-sub);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.mufy-wb-like-label input {
+  display: none;
+}
+.mufy-wb-like-solid {
+  display: none;
+}
+.mufy-wb-like-label input:checked ~ .mufy-wb-like-outline {
+  display: none;
+}
+.mufy-wb-like-label input:checked ~ .mufy-wb-like-solid {
+  display: block;
+}
+.mufy-wb-like-label input:checked ~ span {
+  color: #111111;
+  font-weight: 500;
+}
+
+.mufy-wb-team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 0 6px;
+}
+.mufy-wb-team-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mufy-wb-team-item.reverse {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+.mufy-wb-team-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.mufy-wb-team-desc {
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--wb-text-main);
+}
+
+/* 空状态 */
+.mufy-wb-empty {
+  padding: 48px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--wb-text-muted);
+  width: 100%;
+}
+
+/* 打款页图片进场动效 */
+@keyframes mufy-pay-in {
+  0% {
+    opacity: 0;
+    transform: translateY(26px) scale(0.945) rotateX(10deg);
+    filter: blur(10px) saturate(0.85);
+  }
+  45% {
+    opacity: 1;
+    filter: blur(2px) saturate(1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+    filter: blur(0) saturate(1);
+  }
+}
+
+@keyframes mufy-pay-sweep {
+  0% {
+    transform: translateX(-130%) skewX(-14deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(130%) skewX(-14deg);
+    opacity: 0;
+  }
+}
+
+#tab-album:checked ~ .mufy-tab-content.album {
+  perspective: 1100px;
+}
+
+/* 图片不再当卡片摆着：去圆角投影，四周羽化，直接溶进白底 */
+#tab-album:checked ~ .mufy-tab-content.album .mufy-wb-single-image {
+  position: relative;
+  border-radius: 0;
+  margin-top: 0;
+  transform-origin: 50% 85%;
+  animation: mufy-pay-in 0.9s cubic-bezier(0.16, 0.86, 0.28, 1) both;
+  will-change: transform, opacity, filter;
+  -webkit-mask-image: radial-gradient(ellipse 100% 96% at 50% 50%, #000 70%, rgba(0, 0, 0, 0.72) 84%, transparent 100%);
+  mask-image: radial-gradient(ellipse 100% 96% at 50% 50%, #000 70%, rgba(0, 0, 0, 0.72) 84%, transparent 100%);
+}
+
+#tab-album:checked ~ .mufy-tab-content.album .mufy-wb-single-image img {
+  width: 100%;
+  height: auto;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 4%, #000 96%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 4%, #000 96%, transparent 100%);
+}
+
+#tab-album:checked ~ .mufy-tab-content.album .mufy-wb-single-image::after {
+  content: '';
+  position: absolute;
+  inset: -30% -50%;
+  background: linear-gradient(
+    105deg,
+    transparent 36%,
+    rgba(255, 200, 216, 0.3) 47%,
+    rgba(255, 255, 255, 0.85) 51%,
+    rgba(255, 228, 196, 0.32) 56%,
+    transparent 68%
+  );
+  animation: mufy-pay-sweep 1.2s ease-out 0.45s both;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #tab-album:checked ~ .mufy-tab-content.album .mufy-wb-single-image,
+  #tab-album:checked ~ .mufy-tab-content.album .mufy-wb-single-image::after {
+    animation: none;
+  }
+}
+
+/* 微信号复制 */
+.mufy-wb-copy-id {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mufy-wb-id-text {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--wb-text-main);
+}
+.mufy-wb-id-hint {
+  font-size: 11px;
+  color: var(--wb-text-sub);
+  transition: color 0.2s ease;
+}
+.mufy-wb-copy-id.copied .mufy-wb-id-hint {
+  color: var(--wb-accent);
+}
+.mufy-wb-copy-id.copied .mufy-wb-id-text {
+  color: var(--wb-accent);
+}
+.mufy-wb-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 12px);
+  background: rgba(17, 17, 17, 0.88);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  padding: 10px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 60;
+}
+.mufy-wb-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* 朋友圈音乐分享卡片 */
+.mufy-wb-music {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 10px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 6px;
+  background: rgba(17, 17, 17, 0.02);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.mufy-wb-music:hover {
+  background: rgba(17, 17, 17, 0.045);
+  border-color: rgba(17, 17, 17, 0.14);
+}
+.mufy-wb-music.playing {
+  border-color: rgba(217, 130, 0, 0.3);
+  box-shadow: 0 6px 18px rgba(217, 130, 0, 0.1);
+}
+.mufy-wb-music-cover {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex: 0 0 60px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #000;
+}
+.mufy-wb-music-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.mufy-wb-music-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.38);
+  transition: background 0.2s ease;
+}
+.mufy-wb-music-play .mufy-wb-ic-pause {
+  display: none;
+}
+.mufy-wb-music.playing .mufy-wb-music-play {
+  background: rgba(0, 0, 0, 0.22);
+}
+.mufy-wb-music.playing .mufy-wb-music-play .mufy-wb-ic-play {
+  display: none;
+}
+.mufy-wb-music.playing .mufy-wb-music-play .mufy-wb-ic-pause {
+  display: block;
+}
+.mufy-wb-music-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mufy-wb-music-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--wb-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mufy-wb-music-artist {
+  font-size: 11px;
+  color: var(--wb-text-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mufy-wb-music-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--wb-text-muted);
+}
+.mufy-wb-music-state {
+  color: var(--wb-accent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.mufy-wb-music:hover .mufy-wb-music-state,
+.mufy-wb-music.playing .mufy-wb-music-state {
+  opacity: 1;
+}
+.mufy-wb-music-bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background: var(--wb-accent);
+  transition: width 0.15s linear;
+}
+
+/* 评论区展开 */
+.mufy-wb-comment-btn {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mufy-wb-comment-btn:hover {
+  color: var(--wb-accent);
+}
+.mufy-wb-comment-panel {
+  margin: 10px 0 2px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(17, 17, 17, 0.04);
+  border: 1px solid rgba(17, 17, 17, 0.06);
+  animation: mufy-comment-in 0.32s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+}
+.mufy-wb-comment-panel[hidden] {
+  display: none;
+}
+@keyframes mufy-comment-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.mufy-wb-comment-head {
+  font-size: 11px;
+  color: var(--wb-text-muted);
+  padding: 2px 4px 9px;
+  margin-bottom: 9px;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.07);
+}
+.mufy-wb-comment-item {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 10px 11px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(17, 17, 17, 0.07);
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.03);
+}
+.mufy-wb-comment-item + .mufy-wb-comment-item {
+  margin-top: 8px;
+}
+.mufy-wb-comment-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex: 0 0 24px;
+  object-fit: cover;
+  background: #fff;
+}
+.mufy-wb-comment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.mufy-wb-comment-name {
+  font-size: 11px;
+  color: var(--wb-text-sub);
+}
+.mufy-wb-comment-text {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--wb-text-main);
+  white-space: pre-line;
+}
+
+.mufy-wb-comment-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(217, 130, 0, 0.08);
+  color: var(--wb-accent);
+  font-size: 11px;
+  line-height: 1.4;
+  text-decoration: none;
+  word-break: break-all;
+  transition: background 0.2s ease;
+}
+.mufy-wb-comment-link:hover {
+  background: rgba(217, 130, 0, 0.16);
+}
+.mufy-wb-comment-link svg {
+  flex: 0 0 12px;
+  opacity: 0.8;
+}
+
+.mufy-wb-comment-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+  margin-top: 6px;
+}
+.mufy-wb-comment-sub-label {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--wb-text-main);
+}
+
+.mufy-wb-comment-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--wb-text-main);
+}
+
+.mufy-wb-comment-panel {
+  max-height: 62vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-bottom: 0;
+}
+.mufy-wb-comment-foot {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 8px 2px 9px;
+  background: linear-gradient(to top, #f6f6f6 62%, rgba(246, 246, 246, 0.82) 100%);
+}
+.mufy-wb-comment-count {
+  font-size: 11px;
+  color: var(--wb-text-muted);
+  letter-spacing: 0.3px;
+}
+.mufy-wb-comment-collapse {
+  appearance: none;
+  border: 1px solid rgba(217, 130, 0, 0.35);
+  background: rgba(217, 130, 0, 0.08);
+  color: var(--wb-accent);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.mufy-wb-comment-collapse:hover {
+  background: rgba(217, 130, 0, 0.16);
+  border-color: rgba(217, 130, 0, 0.55);
+}
+
+.mufy-wb-post-link {
+  color: var(--wb-accent);
+  text-decoration: none;
+  word-break: break-all;
+  border-bottom: 1px solid rgba(217, 130, 0, 0.35);
+  margin-left: 2px;
+}
+.mufy-wb-post-link:hover {
+  border-bottom-color: rgba(217, 130, 0, 0.8);
+}
+
+.mufy-wb-copy-tpl {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 7px 12px;
+  border: 1px solid rgba(217, 130, 0, 0.35);
+  border-radius: 999px;
+  background: rgba(217, 130, 0, 0.08);
+  color: var(--wb-accent);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.mufy-wb-copy-tpl:hover {
+  background: rgba(217, 130, 0, 0.16);
+  border-color: rgba(217, 130, 0, 0.55);
+}
+.mufy-wb-copy-tpl.copied {
+  background: rgba(217, 130, 0, 0.2);
+}
+
+.mufy-wb-credit {
+  font-size: 11px;
+  line-height: 1.7;
+  color: rgba(17, 17, 17, 0.42);
+  letter-spacing: 0.2px;
+}
+</style>
+</head>
+<body>
+
+<div class="mufy-wb-wrapper">
+  <!-- 用于切换状态的隐藏Radio按钮 -->
+  <input type="radio" id="tab-jingxuan" name="wb-nav" hidden>
+  <input type="radio" id="tab-weibo" name="wb-nav" hidden checked>
+  <input type="radio" id="tab-video" name="wb-nav" hidden>
+  <input type="radio" id="tab-album" name="wb-nav" hidden>
+
+  <!-- 上半部分：个人资料 -->
+  <div class="mufy-wb-profile">
+    <div class="mufy-wb-avatar-box">
+      <img src="assets/avatar.png" alt="avatar">
+    </div>
+
+    <div class="mufy-wb-info">
+      <div class="mufy-wb-name-row">
+        <span class="mufy-wb-name">米米</span>
+        <div class="mufy-wb-tags">
+          <div class="mufy-wb-vip">SVIP3</div>
+        </div>
+      </div>
+
+      <div class="mufy-wb-stats">
+        <span><strong>16.3万</strong> 粉丝</span>
+        <span><strong>21</strong> 关注</span>
+        <span><strong>173.8万</strong> 转评赞</span>
+      </div>
+
+      <div class="mufy-wb-chaohua">
+        <span>✦</span>超话粉丝钻咖（光遇陪玩超话）
+      </div>
+    </div>
+  </div>
+
+  <!-- 导航Tab -->
+  <div class="mufy-wb-tabs">
+    <label class="mufy-wb-tab" for="tab-jingxuan">精选</label>
+    <label class="mufy-wb-tab" for="tab-weibo">微博</label>
+    <label class="mufy-wb-tab" for="tab-album">打款</label>
+  </div>
+
+  <!-- 精选Tab点进去的内容 -->
+  <div class="mufy-wb-feed mufy-tab-content jingxuan">
+
+    <!-- 帖子1：纯文案帖 -->
+    <div class="mufy-wb-post">
+      <div class="mufy-wb-post-header">
+        <img class="mufy-wb-post-avatar" src="assets/avatar.png" alt="post-avatar">
+        <div class="mufy-wb-post-meta">
+          <span class="mufy-wb-post-name">米米</span>
+          <span class="mufy-wb-post-time">26-08-11 来自 iPhone 15 Pro Max</span>
+        </div>
+        <div class="mufy-wb-read-count">阅读量4.2万</div>
+      </div>
+      <div class="mufy-wb-post-content">
+        从1956年开始 人们谈起爱便少了颗真心
+      </div>
+
+      <div class="mufy-wb-input-wrapper">
+        <input type="text" value="I don't understand" readonly>
+      </div>
+
+      <div class="mufy-wb-post-actions mufy-wb-no-border">
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3v4"></path><path d="M21 7h-4"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 7"></path><path d="M3 7v4"></path><path d="M3 7h4"></path></svg>
+          <span>2456</span>
+        </div>
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>893</span>
+        </div>
+        <label class="mufy-wb-like-label">
+          <input type="checkbox">
+          <svg class="mufy-wb-like-outline" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <svg class="mufy-wb-like-solid" viewBox="0 0 24 24" width="15" height="15" stroke="#111111" stroke-width="1.8" fill="#111111" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <span>2.1万</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 帖子2 -->
+    <div class="mufy-wb-post">
+      <div class="mufy-wb-post-header">
+        <img class="mufy-wb-post-avatar" src="assets/avatar.png" alt="post-avatar">
+        <div class="mufy-wb-post-meta">
+          <span class="mufy-wb-post-name">米米</span>
+          <span class="mufy-wb-post-time">26-08-11 来自 iPhone 15 Pro Max</span>
+        </div>
+        <div class="mufy-wb-read-count">阅读量6.8万</div>
+      </div>
+      <div class="mufy-wb-post-content" style="margin-bottom: 4px;">
+        我们拉勾头抵着头发小小的誓 于是时间有了柔软的刻度
+      </div>
+      <div class="mufy-wb-music" id="mufy-music-card" role="button" tabindex="0" aria-label="播放音乐 Hi Fine Shyt">
+        <div class="mufy-wb-music-cover">
+          <img src="assets/post1.jpg" alt="Hi Fine Shyt 封面">
+          <span class="mufy-wb-music-play">
+            <svg class="mufy-wb-ic-play" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M10 8.6v6.8l5.6-3.4z" fill="currentColor" stroke="none"></path></svg>
+            <svg class="mufy-wb-ic-pause" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M10 8.5v7M14 8.5v7" stroke="currentColor" stroke-width="1.8"></path></svg>
+          </span>
+        </div>
+        <div class="mufy-wb-music-meta">
+          <div class="mufy-wb-music-title">Hi Fine Shyt</div>
+          <div class="mufy-wb-music-artist">张天枢 / ZIK / FIND US.</div>
+          <div class="mufy-wb-music-tag">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 18V6l10-2v12"></path><circle cx="6.5" cy="18" r="2.5"></circle><circle cx="16.5" cy="16" r="2.5"></circle></svg>
+            <span>音乐</span>
+            <span class="mufy-wb-music-state">点我播放</span>
+          </div>
+        </div>
+        <div class="mufy-wb-music-bar"></div>
+      </div>
+      <audio id="mufy-audio" src="assets/hi-fine-shyt.mp3" preload="metadata"></audio>
+      <div class="mufy-wb-post-actions">
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3v4"></path><path d="M21 7h-4"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 7"></path><path d="M3 7v4"></path><path d="M3 7h4"></path></svg>
+          <span>3102</span>
+        </div>
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>1240</span>
+        </div>
+        <label class="mufy-wb-like-label">
+          <input type="checkbox">
+          <svg class="mufy-wb-like-outline" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <svg class="mufy-wb-like-solid" viewBox="0 0 24 24" width="15" height="15" stroke="#111111" stroke-width="1.8" fill="#111111" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <span>3.5万</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 帖子3 -->
+    <div class="mufy-wb-post">
+      <div class="mufy-wb-post-header">
+        <img class="mufy-wb-post-avatar" src="assets/avatar.png" alt="post-avatar">
+        <div class="mufy-wb-post-meta">
+          <span class="mufy-wb-post-name">米米</span>
+          <span class="mufy-wb-post-time">26-08-11 来自 iPhone 15 Pro Max</span>
+        </div>
+        <div class="mufy-wb-read-count">阅读量5.5万</div>
+      </div>
+      <div class="mufy-wb-post-content" style="margin-bottom: 4px;">
+        虐恋自助专区，点击评论区查看
+      </div>
+      <div class="mufy-wb-single-image">
+        <img src="assets/post-zhulian.png" alt="post-single-image-2">
+      </div>
+      <div class="mufy-wb-post-actions">
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3v4"></path><path d="M21 7h-4"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 7"></path><path d="M3 7v4"></path><path d="M3 7h4"></path></svg>
+          <span>1580</span>
+        </div>
+        <div class="mufy-wb-action-btn mufy-wb-comment-btn" data-target="comment-zhuqu" role="button" tabindex="0" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>926</span>
+        </div>
+        <label class="mufy-wb-like-label">
+          <input type="checkbox">
+          <svg class="mufy-wb-like-outline" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <svg class="mufy-wb-like-solid" viewBox="0 0 24 24" width="15" height="15" stroke="#111111" stroke-width="1.8" fill="#111111" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <span>2.8万</span>
+        </label>
+      </div>
+
+      <div class="mufy-wb-comment-panel" id="comment-zhuqu" hidden>
+        <div class="mufy-wb-comment-head">评论 926</div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">【虐】 过犹不及</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/ck54iAR9zRIl" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/ck54iAR9zRIl</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">-殁&amp;虐-
+｜触之即伤｜</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cbIea5d4UP1E?f=301" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cbIea5d4UP1E</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">虐 40/h  21半 晚11后+4
+「各有樊笼」</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cc6UnoJdeord" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cc6UnoJdeord</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">🎼𝜗虐恋底价45/25</span>
+            <div class="mufy-wb-comment-sub">
+              <span class="mufy-wb-comment-sub-label">◎张开你的羽翼</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cfpU8wWfbeWg?f=301" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cfpU8wWfbeWg</span>
+            </a>
+            </div>
+            <div class="mufy-wb-comment-sub">
+              <span class="mufy-wb-comment-sub-label">◎“神”的低语</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/ctFdjgJWWGxM?f=301" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/ctFdjgJWWGxM</span>
+            </a>
+            </div>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">虐恋45/25 
+十点后+3十二点后+5 两点后+8
+
+无所谓反正我们的关系也没有很深</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/crvEdlzq0jJb" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/crvEdlzq0jJb</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">虐40/22 【呢呢】听呢 自然的声音 心的声音</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cdhDuOsn6Hr2" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cdhDuOsn6Hr2</span>
+            </a>
+            <a class="mufy-wb-comment-link" href="https://docs.qq.com/doc/DQUJTVWNTR2ZiRExP" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>【腾讯文档详细自介】</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">7克</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/co8e0CNxvgSE" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/co8e0CNxvgSE</span>
+            </a>
+            <span class="mufy-wb-comment-text">| 凌晨+5
+| 旁观+7
+| 不接替身/人设虐</span>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">眼泪亦真亦假</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cotvnZiIeacZ" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cotvnZiIeacZ</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">先逃跑的人。</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cjuQjRzUPW9j" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cjuQjRzUPW9j</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">「金山」迄今為止。</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cogPp6kvIklp" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cogPp6kvIklp</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">我们的地久天长</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cbhfyOlTdzm4" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cbhfyOlTdzm4</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">荒诞哲学</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cr699zNN0VZo" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cr699zNN0VZo</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">ᵖˡᵃᵗʸᶜᵒᵈᵒⁿ ᶠˡᵒʳᵉᵗ ᵠᵘᵒᵗᵃⁿⁿⁱˢ❀
+✿桔梗年年盛开</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cd3WRMsp5fsu" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cd3WRMsp5fsu</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">【 45/27】
+门庭清冷，来者需诚</span>
+            <a class="mufy-wb-comment-link" href="https://kdocs.cn/l/cgCGPlHJU14u" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>kdocs.cn/l/cgCGPlHJU14u</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">基础价45/27 凌晨统一 +8
+指定风格/建模＋5
+暂不接旁观 除非自带高
+失憶錄</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cuZTxkbaIo0X" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cuZTxkbaIo0X</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">1约存
+“爱很简单 也很重要”</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cuABz1M0QApv" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cuABz1M0QApv</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">只是这一生冗长我再难与你相遇难免哽咽
+43/h，25/0.5h  半单口+7   情景剧本+5   凌晨+9   旁观+9   指定（建模）+3   需陪评+3
+【金山文档 | WPS云文档】 水镜</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cabl5DQ4uEkV" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cabl5DQ4uEkV</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">【金山文档 | WPS云文档】 湖泊里的一滴淚水价格：40/21旁观加5r</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/ckhRxmajnP73" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/ckhRxmajnP73</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">方时有  50/28（不接同事）
+先逃跑的人。</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cjuQjRzUPW9j" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cjuQjRzUPW9j</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">「 方时有虐恋教学相关 」</span>
+            <a class="mufy-wb-comment-link" href="https://kdocs.cn/l/cbaR9c2yGOTI" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>kdocs.cn/l/cbaR9c2yGOTI</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">消息 讯息 音讯 杳无音讯</span>
+            <a class="mufy-wb-comment-link" href="https://dq01x.github.io/Covetous/" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>dq01x.github.io/Covetous/</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">妳在北纬67°的哪里？42/24</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/csqwZJaBarPq" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/csqwZJaBarPq</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">〔素雪I级〕
+27｜47
+眼泪亦真亦假</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cotvnZiIeacZ" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg>
+              <span>www.kdocs.cn/l/cotvnZiIeacZ</span>
+            </a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>            <span class="mufy-wb-comment-text">【不知春 虐Ⅲ】
+一封来自冬日的信——“到冬天了，记得围好围巾戴好手套，牵好我”</span>            <a class="mufy-wb-comment-link" href="https://workbuddy.link/p/dQVsmtbBgJNBeWdIKs1MzE?source=2" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://workbuddy.link/p/dQVsmtbBgJNBeWdIKs1MzE?source=2</span></a>            <span class="mufy-wb-comment-text">【金山】让我们在无望的生活里相拥</span>            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/ci0uMGlSf2NH" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://www.kdocs.cn/l/ci0uMGlSf2NH</span></a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>            <span class="mufy-wb-comment-text">【素雪III级】 免-虐恋24/40
+“拥抱可以吸收彼此人生的颠簸，让我们都好受些”</span>            <div class="mufy-wb-comment-inline"><span>网页：</span>            <a class="mufy-wb-comment-link" href="https://dq01x.github.io/Mute" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://dq01x.github.io/Mute</span></a></div>            <div class="mufy-wb-comment-inline"><span>文档：</span>            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cm3w2fOD9Bxa" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://www.kdocs.cn/l/cm3w2fOD9Bxa</span></a></div>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>            <span class="mufy-wb-comment-text">你好，我是弗林Flynn_ 很高兴认识你
+单子默认存约小群约时间 如果本单单条标明现取就可现
+已过审「素雪」「隐蓝」「夙愿」「白纸」等多个严审团
+🔗【整个爱尔兰都在下雪】 非典型虐</span>            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cd73AcKja008" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://www.kdocs.cn/l/cd73AcKja008</span></a>            <span class="mufy-wb-comment-text">旁观+10｜卡装扮+5
+23点后+5｜3点后+10</span>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">「冷空气.」</span>
+            <div class="mufy-wb-comment-inline"><span>&lt;金山&gt;</span><a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/chAVb3EvWy0p" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://www.kdocs.cn/l/chAVb3EvWy0p</span></a></div>
+            <div class="mufy-wb-comment-inline"><span>&lt;腾讯&gt;</span><a class="mufy-wb-comment-link" href="https://docs.qq.com/doc/DRURLS2VjU21pdGNO" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://docs.qq.com/doc/DRURLS2VjU21pdGNO</span></a></div>
+            <span class="mufy-wb-comment-text">45/24 高擦虐30/50</span>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">25/0.5h 44/h
+「素雪虐Ⅱ」
+你喜欢你的泪吗？你习惯你的泪吗</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/ciHRCSKIfEDm" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://www.kdocs.cn/l/ciHRCSKIfEDm</span></a>
+            <span class="mufy-wb-comment-text">旧人旧相逢</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/caKDBifBHise" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://www.kdocs.cn/l/caKDBifBHise</span></a>
+            <span class="mufy-wb-comment-text">新手+3旁观+4 夜间+5/8</span>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">11-2➕5r 2-5➕8r
+『素雪』虐lll -24/0.5h 40/1h
+ 痛苦像雨季淋漓不尽</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/ckAK7kmAAHKV" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://www.kdocs.cn/l/ckAK7kmAAHKV</span></a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">1 现取
+素雪虐Ⅰ级 45/H 25/半
+眼泪是干涸的海。</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cufh7wunivlA" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://www.kdocs.cn/l/cufh7wunivlA</span></a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">1【素雪lll级】
+「倘若时间只是人为的停顿。」</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/cofTOMaS6VOO" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://www.kdocs.cn/l/cofTOMaS6VOO</span></a>
+            <span class="mufy-wb-comment-text">40/22｜指定+3
+23-2 +5｜2以后+8</span>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-item">
+          <img class="mufy-wb-comment-avatar" src="assets/avatar.png" alt="">
+          <div class="mufy-wb-comment-body">
+            <span class="mufy-wb-comment-name">米米</span>
+            <span class="mufy-wb-comment-text">素雪虐ll
+25-45
+她的生长痛</span>
+            <a class="mufy-wb-comment-link" href="https://www.kdocs.cn/l/caWOX09OVC64" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5 0L20 10.5a5 5 0 0 0-7-7L11 5"></path><path d="M14 11a5 5 0 0 0-7.5 0L4 13.5a5 5 0 0 0 7 7L13 19"></path></svg><span>https://www.kdocs.cn/l/caWOX09OVC64</span></a>
+          </div>
+        </div>
+        <div class="mufy-wb-comment-foot">
+          <span class="mufy-wb-comment-count">共 32 条</span>
+          <button class="mufy-wb-comment-collapse" type="button">收回评论区</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 帖子4 -->
+    <div class="mufy-wb-post">
+      <div class="mufy-wb-post-header">
+        <img class="mufy-wb-post-avatar" src="assets/avatar.png" alt="post-avatar">
+        <div class="mufy-wb-post-meta">
+          <span class="mufy-wb-post-name">米米</span>
+          <span class="mufy-wb-post-time">26-08-11 来自 iPhone 15 Pro Max</span>
+        </div>
+        <div class="mufy-wb-read-count">阅读量7.1万</div>
+      </div>
+      <div class="mufy-wb-post-content" style="margin-bottom: 4px;">
+        谁需要一个漂亮的视频
+        <br><br>
+        许愿|代拍调须知<a class="mufy-wb-post-link" href="https://xuyuan-mature-ape-d2gs59xyde76cd4c1.webapps.tcloudbase.com" target="_blank" rel="noopener noreferrer">https://xuyuan-mature-ape-d2gs59xyde76cd4c1.webapps.tcloudbase.com</a>
+      </div>
+      <div class="mufy-wb-single-image">
+        <img src="assets/post4-rain.png" alt="post-single-image-3">
+      </div>
+      <div class="mufy-wb-post-actions">
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3v4"></path><path d="M21 7h-4"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 7"></path><path d="M3 7v4"></path><path d="M3 7h4"></path></svg>
+          <span>2130</span>
+        </div>
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>1058</span>
+        </div>
+        <label class="mufy-wb-like-label">
+          <input type="checkbox">
+          <svg class="mufy-wb-like-outline" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <svg class="mufy-wb-like-solid" viewBox="0 0 24 24" width="15" height="15" stroke="#111111" stroke-width="1.8" fill="#111111" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <span>4.2万</span>
+        </label>
+      </div>
+    </div>
+
+
+    <!-- 帖子5：鸣谢 -->
+    <div class="mufy-wb-post">
+      <div class="mufy-wb-post-header">
+        <img class="mufy-wb-post-avatar" src="assets/avatar.png" alt="post-avatar">
+        <div class="mufy-wb-post-meta">
+          <span class="mufy-wb-post-name">米米</span>
+          <span class="mufy-wb-post-time">26-08-11 来自 iPhone 15 Pro Max</span>
+        </div>
+        <div class="mufy-wb-read-count">阅读量4.8万</div>
+      </div>
+      <div class="mufy-wb-post-content mufy-wb-credit" style="margin-bottom: 4px;">
+        感谢HTML来源Ev-007老师<br>
+        感谢水母小助手
+      </div>
+      <div class="mufy-wb-post-actions">
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3v4"></path><path d="M21 7h-4"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 7"></path><path d="M3 7v4"></path><path d="M3 7h4"></path></svg>
+          <span>1890</span>
+        </div>
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>950</span>
+        </div>
+        <label class="mufy-wb-like-label">
+          <input type="checkbox">
+          <svg class="mufy-wb-like-outline" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <svg class="mufy-wb-like-solid" viewBox="0 0 24 24" width="15" height="15" stroke="#111111" stroke-width="1.8" fill="#111111" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <span>3.1万</span>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 微博Tab点进去的内容 -->
+  <div class="mufy-wb-feed mufy-tab-content weibo">
+
+    <!-- 单条微博开始 -->
+    <div class="mufy-wb-post">
+      <div class="mufy-wb-post-header">
+        <img class="mufy-wb-post-avatar" src="assets/avatar.png" alt="post-avatar">
+        <div class="mufy-wb-post-meta">
+          <span class="mufy-wb-post-name">米米</span>
+          <span class="mufy-wb-post-time">26-08-11 来自 iPhone 15 Pro Max</span>
+        </div>
+        <div class="mufy-wb-read-count">阅读量1.8万</div>
+      </div>
+
+      <div class="mufy-wb-post-content">
+        吃饱 睡好 赚米米
+      </div>
+
+      <div class="mufy-wb-post-media-container">
+        <div class="mufy-wb-post-image">
+          <img src="assets/post-main.png" alt="post-image">
+        </div>
+
+        <div class="mufy-wb-post-side-info">
+          <div class="mufy-wb-basic-settings">
+            <div class="mufy-wb-info-tag">Name: <span>米米</span></div>
+            <div class="mufy-wb-info-tag">Age: <span>20</span></div>
+            <div class="mufy-wb-info-tag">Mbti: <span>INFP</span></div>
+          </div>
+
+          <div class="mufy-wb-role-desc">性格活泼热情好相处 欢迎小窗找我玩呀> <
+朋友圈有自助条及团内上新活动
+偶尔推一推卖得比较好的或者回头率高的陪
+如果不想看的话可以和我说 我给你分组ovo
+有换人/退单/客诉等需求直接讲 
+了解具体情况后 会第一时间帮你积极沟通处理的
+
+目前所在团：
+主三恋 素雪 观宴 GNW 淡锈 黑羊 失色律
+主语聊 百合 心率 灯塔 有猫 别后十三春
+
+#持续更新中···</div>
+
+          <div class="mufy-wb-gender-tags">
+            <div class="mufy-wb-g-tag">Le-h</div>
+            <div class="mufy-wb-g-tag">水瓶</div>
+            <div class="mufy-wb-g-tag">主派三恋/语聊</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mufy-wb-post-actions">
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3v4"></path><path d="M21 7h-4"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 7"></path><path d="M3 7v4"></path><path d="M3 7h4"></path></svg>
+          <span>转发</span>
+        </div>
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>评论</span>
+        </div>
+        <label class="mufy-wb-like-label">
+          <input type="checkbox">
+          <svg class="mufy-wb-like-outline" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <svg class="mufy-wb-like-solid" viewBox="0 0 24 24" width="15" height="15" stroke="#111111" stroke-width="1.8" fill="#111111" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <span>点赞</span>
+        </label>
+      </div>
+
+      <div class="mufy-wb-post-header" style="margin-top: 16px;">
+        <div class="mufy-wb-post-meta">
+          <span class="mufy-wb-post-name">找到我</span>
+        </div>
+      </div>
+
+      <div class="mufy-wb-team-list">
+        <div class="mufy-wb-team-item">
+          <img class="mufy-wb-team-avatar" src="assets/avatar.png" alt="team-avatar">
+          <div class="mufy-wb-team-desc mufy-wb-copy-id" data-wechat-id="mim21mi" role="button" tabindex="0" aria-label="复制微信号 mim21mi">
+            <span class="mufy-wb-id-text">微信号：mim21mi</span>
+            <span class="mufy-wb-id-hint">点击复制，去微信粘贴搜索</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mufy-wb-post-actions" style="margin-top: 16px;">
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3v4"></path><path d="M21 7h-4"></path><path d="M3 13a9 9 0 1 0 3-7.7L3 7"></path><path d="M3 7v4"></path><path d="M3 7h4"></path></svg>
+          <span>转发</span>
+        </div>
+        <div class="mufy-wb-action-btn">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>评论</span>
+        </div>
+        <label class="mufy-wb-like-label">
+          <input type="checkbox">
+          <svg class="mufy-wb-like-outline" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <svg class="mufy-wb-like-solid" viewBox="0 0 24 24" width="15" height="15" stroke="#111111" stroke-width="1.8" fill="#111111" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <span>点赞</span>
+        </label>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- 视频Tab -->
+  <div class="mufy-wb-feed mufy-tab-content video">
+    <div class="mufy-wb-empty">视频位置待填</div>
+  </div>
+
+  <!-- 相册Tab -->
+  <div class="mufy-wb-feed mufy-tab-content album">
+    <div class="mufy-wb-single-image">
+      <img src="assets/pay-card.webp" alt="打款方式">
+    </div>
+  </div>
+
+</div>
+
+
+<div class="mufy-wb-toast" id="mufy-toast">已复制</div>
+
+<script>
+(function () {
+  var el = document.querySelector('.mufy-wb-copy-id');
+  var toast = document.getElementById('mufy-toast');
+  if (!el || !toast) return;
+  var hint = el.querySelector('.mufy-wb-id-hint');
+  var wid = el.getAttribute('data-wechat-id');
+  var timerA, timerB;
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    var ok = false;
+    try {
+      ok = document.execCommand('copy');
+    } catch (e) {
+      ok = false;
+    }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function doCopy(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(function () {
+        return true;
+      }).catch(function () {
+        return fallbackCopy(text);
+      });
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+
+  function onCopy() {
+    doCopy(wid).then(function (ok) {
+      el.classList.add('copied');
+      hint.textContent = ok ? '已复制，打开微信粘贴搜索' : '微信搜索 ' + wid;
+      toast.textContent = ok ? '已复制微信号 ' + wid : '请手动记下 ' + wid;
+      toast.classList.add('show');
+      clearTimeout(timerA);
+      clearTimeout(timerB);
+      timerA = setTimeout(function () {
+        toast.classList.remove('show');
+      }, 1800);
+      timerB = setTimeout(function () {
+        el.classList.remove('copied');
+        hint.textContent = '点击复制，去微信粘贴搜索';
+      }, 2600);
+    });
+  }
+
+  el.addEventListener('click', onCopy);
+  el.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onCopy();
+    }
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var card = document.getElementById('mufy-music-card');
+  var audio = document.getElementById('mufy-audio');
+  var bar = card ? card.querySelector('.mufy-wb-music-bar') : null;
+  var state = card ? card.querySelector('.mufy-wb-music-state') : null;
+  if (!card || !audio) return;
+
+  function setPlaying(on) {
+    card.classList.toggle('playing', on);
+    if (state) state.textContent = on ? '播放中' : '点我播放';
+  }
+
+  function toggle() {
+    if (audio.paused) {
+      var pr = audio.play();
+      if (pr && pr.catch) {
+        pr.catch(function () {
+          if (state) state.textContent = '播放失败，再点一次';
+        });
+      }
+    } else {
+      audio.pause();
+    }
+  }
+
+  audio.addEventListener('play', function () { setPlaying(true); });
+  audio.addEventListener('pause', function () { setPlaying(false); });
+  audio.addEventListener('ended', function () {
+    setPlaying(false);
+    audio.currentTime = 0;
+    if (bar) bar.style.width = '0%';
+  });
+  audio.addEventListener('timeupdate', function () {
+    if (!bar || !audio.duration) return;
+    bar.style.width = (audio.currentTime / audio.duration * 100).toFixed(2) + '%';
+  });
+
+  card.addEventListener('click', toggle);
+  card.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggle();
+    }
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var btns = document.querySelectorAll('.mufy-wb-comment-btn');
+  Array.prototype.forEach.call(btns, function (btn) {
+    var panel = document.getElementById(btn.getAttribute('data-target'));
+    if (!panel) return;
+    function toggle() {
+      var open = panel.hasAttribute('hidden');
+      if (open) {
+        panel.removeAttribute('hidden');
+      } else {
+        panel.setAttribute('hidden', '');
+      }
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.classList.toggle('active', open);
+    }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      toggle();
+    });
+    btn.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle();
+      }
+    });
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var btn = document.querySelector('.mufy-wb-comment-collapse');
+  var panel = document.getElementById('comment-zhuqu');
+  var toggleBtn = document.querySelector('.mufy-wb-comment-btn');
+  if (!btn || !panel) return;
+  btn.addEventListener('click', function () {
+    panel.setAttribute('hidden', '');
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      toggleBtn.classList.remove('active');
+      toggleBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var btn = document.querySelector('.mufy-wb-copy-tpl');
+  var toast = document.getElementById('mufy-toast');
+  if (!btn) return;
+  var TPL = '报单格式：\n团名：\n老板：\n项目：\n时长：\n价格：\n加价补充：';
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function doCopy(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(function () { return true; })
+        .catch(function () { return fallbackCopy(text); });
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+
+  btn.addEventListener('click', function () {
+    doCopy(TPL).then(function (ok) {
+      var label = btn.querySelector('span');
+      btn.classList.add('copied');
+      if (label) label.textContent = ok ? '已复制，去粘贴' : '复制失败';
+      if (toast) {
+        toast.textContent = ok ? '已复制报单格式' : '复制失败，请手动选中';
+        toast.classList.add('show');
+        setTimeout(function () { toast.classList.remove('show'); }, 1800);
+      }
+      setTimeout(function () {
+        btn.classList.remove('copied');
+        if (label) label.textContent = '复制报单格式';
+      }, 2400);
+    });
+  });
+})();
+</script>
+</body>
+</html>
